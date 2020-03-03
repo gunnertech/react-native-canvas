@@ -1,7 +1,7 @@
 import Canvas from './Canvas';
-import {webviewConstructor, webviewProperties, webviewEvents} from './webview-binders';
+import { webviewConstructor, webviewProperties, webviewEvents } from './webview-binders';
 
-@webviewProperties({crossOrigin: undefined, height: undefined, src: undefined, width: undefined})
+@webviewProperties({ crossOrigin: 'anonymous', height: undefined, src: undefined, width: undefined })
 @webviewEvents(['load', 'error'])
 @webviewConstructor('Image')
 export default class Image {
@@ -10,6 +10,7 @@ export default class Image {
       throw new Error('Image must be initialized with a Canvas instance');
     }
     this.canvas = canvas;
+    this.crossOrigin = 'anonymous';
     if (this.onConstruction && !noOnConstruction) {
       this.onConstruction();
     }
