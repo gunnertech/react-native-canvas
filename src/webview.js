@@ -144,7 +144,7 @@ const createObjectsFromArgs = args => {
   for (let index = 0; index < args.length; index += 1) {
     const currentArg = args[index];
     if (currentArg && currentArg.className !== undefined) {
-      const {className, classArgs} = currentArg;
+      const { className, classArgs } = currentArg;
       const object = new constructors[className](...classArgs);
       args[index] = object;
     }
@@ -186,25 +186,25 @@ const typedArrays = {
  */
 Image.bind =
   Image.bind ||
-  function() {
+  function () {
     return Image;
   };
 
 Path2D.bind =
   Path2D.bind ||
-  function() {
+  function () {
     return Path2D;
   };
 
 ImageData.bind =
   ImageData.bind ||
-  function() {
+  function () {
     return ImageData;
   };
 
 Uint8ClampedArray.bind =
   Uint8ClampedArray.bind ||
-  function() {
+  function () {
     return Uint8ClampedArray;
   };
 
@@ -217,10 +217,10 @@ const populateRefs = arg => {
 
 document.body.appendChild(canvas);
 
-function handleMessage({id, type, payload}) {
+function handleMessage({ id, type, payload }) {
   switch (type) {
     case 'exec': {
-      const {target, method, args} = payload;
+      const { target, method, args } = payload;
       const result = targets[target][method](...args.map(populateRefs));
       const message = toMessage(result);
 
@@ -235,16 +235,24 @@ function handleMessage({id, type, payload}) {
           }
         }
       }
-      window.ReactNativeWebView.postMessage(JSON.stringify({id, ...message}));
+      window.ReactNativeWebView.postMessage(JSON.stringify({ id, ...message }));
       break;
     }
     case 'set': {
-      const {target, key, value} = payload;
-      targets[target][key] = populateRefs(value);
+      const { target, key, value } = payload;
+      try {
+        targets[target][key] = populateRefs(value);
+      } catch (e) {
+        alert(JSON.stringify(target));
+        alert(JSON.stringify(key));
+        alert(JSON.stringify(value))
+      }
+
+
       break;
     }
     case 'construct': {
-      const {constructor, id: target, args = []} = payload;
+      const { constructor, id: target, args = [] } = payload;
       const newArgs = createObjectsFromArgs(args);
       let object;
       try {
@@ -255,21 +263,21 @@ function handleMessage({id, type, payload}) {
       object.__constructorName__ = constructor;
       const message = toMessage({});
       targets[target] = object;
-      window.ReactNativeWebView.postMessage(JSON.stringify({id, ...message}));
+      window.ReactNativeWebView.postMessage(JSON.stringify({ id, ...message }));
       break;
     }
     case 'listen': {
-      const {types, target} = payload;
+      const { types, target } = payload;
       for (const eventType of types) {
         targets[target].addEventListener(eventType, e => {
           const message = toMessage({
             type: 'event',
             payload: {
               type: e.type,
-              target: {...flattenObject(targets[target]), [WEBVIEW_TARGET]: target},
+              target: { ...flattenObject(targets[target]), [WEBVIEW_TARGET]: target },
             },
           });
-          window.ReactNativeWebView.postMessage(JSON.stringify({id, ...message}));
+          window.ReactNativeWebView.postMessage(JSON.stringify({ id, ...message }));
         });
       }
       break;
