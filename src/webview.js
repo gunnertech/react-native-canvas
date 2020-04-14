@@ -241,7 +241,9 @@ function handleMessage({ id, type, payload }) {
     case 'set': {
       const { target, key, value } = payload;
       try {
-        targets[target][key] = populateRefs(value);
+        if (!!target && !!targets[target]) {
+          targets[target][key] = populateRefs(value);
+        }
       } catch (e) {
         alert(JSON.stringify(target));
         alert(JSON.stringify(key));
